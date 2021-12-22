@@ -2,8 +2,9 @@ package ru.job4j.quartz;
 
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
-import ru.job4j.helperclasses.Config;
-
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
 import static org.quartz.JobBuilder.*;
 import static org.quartz.TriggerBuilder.*;
 import static org.quartz.SimpleScheduleBuilder.*;
@@ -16,30 +17,29 @@ public class AlertRabbit {
             JobDetail job = newJob(Rabbit.class).build();
             SimpleScheduleBuilder times = simpleSchedule()
                     /*.withIntervalInSeconds(10)*/
-                    .withIntervalInSeconds(new ReadProperties().read())
+                    .withIntervalInSeconds(read())
                     .repeatForever();
             Trigger trigger = newTrigger()
                     .startNow()
                     .withSchedule(times)
                     .build();
             scheduler.scheduleJob(job, trigger);
-        } catch (SchedulerException se) {
+        } catch (SchedulerException | IOException se) {
             se.printStackTrace();
         }
     }
-
+    public static int read() throws IOException {
+        Properties properties = new Properties();
+        try (InputStream in = AlertRabbit.class.getClassLoader()
+                .getResourceAsStream("rabbit.properties")) {
+            properties.load(in);
+        }
+        return Integer.parseInt(properties.getProperty("rabbit.interval"));
+    }
     public static class Rabbit implements Job {
         @Override
-        public void execute(JobExecutionContext context) throws JobExecutionException {
+        public void execute(JobExecutionContext context) {
             System.out.println("Rabbit runs here ...");
-        }
-    }
-    public static class ReadProperties {
-        public int read() {
-            String path = "rabbit.properties";
-            Config config = new Config(path);
-            config.load();
-            return Integer.parseInt(config.value("rabbit.interval"));
         }
     }
 }
