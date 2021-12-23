@@ -4,9 +4,8 @@ import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -21,20 +20,12 @@ public class AlertRabbit {
     public AlertRabbit() {
     }
 
-    public void init() {
-        try (InputStream in = AlertRabbit.class.getClassLoader().
-                getResourceAsStream("rabbit.properties")) {
-            Properties config = new Properties();
-            config.load(in);
-            Class.forName(config.getProperty("driver-class-name"));
+    public Connection init(Properties properties) throws SQLException {
             cn = DriverManager.getConnection(
-                    config.getProperty("url"),
-                    config.getProperty("username"),
-                    config.getProperty("password")
-            );
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        }
+                    properties.getProperty("url"),
+                    properties.getProperty("username"),
+                    properties.getProperty("password"));
+            return cn;
     }
 
         public void close() throws SQLException {
@@ -44,21 +35,23 @@ public class AlertRabbit {
             }
 
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException, SQLException {
+        AlertRabbit alertRabbit = new AlertRabbit();
+        Properties newProp = read();
         try {
-            AlertRabbit alertRabbit = new AlertRabbit();
-            alertRabbit.init();
+            Connection newConnect = alertRabbit.init(newProp);
             List<Long> store = new ArrayList<>();
             Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
             scheduler.start();
             JobDataMap data = new JobDataMap();
             data.put("store", store);
+            data.put("cn", newConnect);
             JobDetail job = newJob(Rabbit.class)
                     .usingJobData(data)
                     .build();
             SimpleScheduleBuilder times = simpleSchedule()
-                    /*.withIntervalInSeconds(10)*/
-                    .withIntervalInSeconds(read())
+                    .withIntervalInSeconds(Integer.parseInt(read().
+                            getProperty("rabbit.interval")))
                     .repeatForever();
             Trigger trigger = newTrigger()
                     .startNow()
@@ -72,15 +65,18 @@ public class AlertRabbit {
             se.printStackTrace();
         }
     }
-    public static int read() throws IOException {
+
+    public static Properties read() throws IOException {
         Properties properties = new Properties();
         try (InputStream in = AlertRabbit.class.getClassLoader()
                 .getResourceAsStream("rabbit.properties")) {
             properties.load(in);
         }
-        return Integer.parseInt(properties.getProperty("rabbit.interval"));
+        return properties;
     }
+
     public static class Rabbit implements Job {
+        private final LocalDateTime created = LocalDateTime.now();
         public Rabbit() {
             System.out.println(hashCode());
         }
@@ -89,6 +85,16 @@ public class AlertRabbit {
             System.out.println("Rabbit runs here ...");
             List<Long> store = (List<Long>) context.getJobDetail().getJobDataMap().get("store");
             store.add(System.currentTimeMillis());
+            Connection con = (Connection) context.getJobDetail().getJobDataMap().get("cn");
+            try (PreparedStatement statement =
+                         con.prepareStatement("insert into rabbit(created_date) values (?)")) {
+                statement.setTimestamp(1, Timestamp.valueOf(created));
+                statement.execute();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
         }
     }
+
 }
