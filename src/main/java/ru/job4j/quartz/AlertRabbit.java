@@ -39,28 +39,29 @@ public class AlertRabbit {
         AlertRabbit alertRabbit = new AlertRabbit();
         Properties newProp = read();
         try {
-            Connection newConnect = alertRabbit.init(newProp);
-            List<Long> store = new ArrayList<>();
-            Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
-            scheduler.start();
-            JobDataMap data = new JobDataMap();
-            data.put("store", store);
-            data.put("cn", newConnect);
-            JobDetail job = newJob(Rabbit.class)
-                    .usingJobData(data)
-                    .build();
-            SimpleScheduleBuilder times = simpleSchedule()
-                    .withIntervalInSeconds(Integer.parseInt(read().
-                            getProperty("rabbit.interval")))
-                    .repeatForever();
-            Trigger trigger = newTrigger()
-                    .startNow()
-                    .withSchedule(times)
-                    .build();
-            scheduler.scheduleJob(job, trigger);
-            Thread.sleep(10000);
-            scheduler.shutdown();
-            System.out.println(store);
+            try (Connection newConnect = alertRabbit.init(newProp)) {
+                List<Long> store = new ArrayList<>();
+                Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
+                scheduler.start();
+                JobDataMap data = new JobDataMap();
+                data.put("store", store);
+                data.put("cn", newConnect);
+                JobDetail job = newJob(Rabbit.class)
+                        .usingJobData(data)
+                        .build();
+                SimpleScheduleBuilder times = simpleSchedule()
+                        .withIntervalInSeconds(Integer.parseInt(read().
+                                getProperty("rabbit.interval")))
+                        .repeatForever();
+                Trigger trigger = newTrigger()
+                        .startNow()
+                        .withSchedule(times)
+                        .build();
+                scheduler.scheduleJob(job, trigger);
+                Thread.sleep(10000);
+                scheduler.shutdown();
+                System.out.println(store);
+            }
         } catch (SchedulerException | IOException | InterruptedException se) {
             se.printStackTrace();
         }
@@ -76,19 +77,16 @@ public class AlertRabbit {
     }
 
     public static class Rabbit implements Job {
-        private final LocalDateTime created = LocalDateTime.now();
         public Rabbit() {
             System.out.println(hashCode());
         }
         @Override
         public void execute(JobExecutionContext context) {
             System.out.println("Rabbit runs here ...");
-            List<Long> store = (List<Long>) context.getJobDetail().getJobDataMap().get("store");
-            store.add(System.currentTimeMillis());
             Connection con = (Connection) context.getJobDetail().getJobDataMap().get("cn");
             try (PreparedStatement statement =
                          con.prepareStatement("insert into rabbit(created_date) values (?)")) {
-                statement.setTimestamp(1, Timestamp.valueOf(created));
+                statement.setTimestamp(1, Timestamp.valueOf(LocalDateTime.now()));
                 statement.execute();
             } catch (Exception e) {
                 e.printStackTrace();
