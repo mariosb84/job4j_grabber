@@ -15,30 +15,19 @@ import static org.quartz.SimpleScheduleBuilder.*;
 
 public class AlertRabbit {
 
-    private Connection cn;
-
     public AlertRabbit() {
     }
 
     public Connection init(Properties properties) throws SQLException {
-            cn = DriverManager.getConnection(
-                    properties.getProperty("url"),
-                    properties.getProperty("username"),
-                    properties.getProperty("password"));
-            return cn;
+        return DriverManager.getConnection(
+                properties.getProperty("url"),
+                properties.getProperty("username"),
+                properties.getProperty("password"));
     }
 
-        public void close() throws SQLException {
-            if (cn != null) {
-                cn.close();
-              }
-            }
-
-
-    public static void main(String[] args) throws IOException, SQLException {
+    public static void main(String[] args) throws IOException, SQLException, SchedulerException, InterruptedException {
         AlertRabbit alertRabbit = new AlertRabbit();
         Properties newProp = read();
-        try {
             try (Connection newConnect = alertRabbit.init(newProp)) {
                 List<Long> store = new ArrayList<>();
                 Scheduler scheduler = StdSchedulerFactory.getDefaultScheduler();
@@ -62,9 +51,6 @@ public class AlertRabbit {
                 scheduler.shutdown();
                 System.out.println(store);
             }
-        } catch (SchedulerException | IOException | InterruptedException se) {
-            se.printStackTrace();
-        }
     }
 
     public static Properties read() throws IOException {
@@ -77,9 +63,11 @@ public class AlertRabbit {
     }
 
     public static class Rabbit implements Job {
+
         public Rabbit() {
             System.out.println(hashCode());
         }
+
         @Override
         public void execute(JobExecutionContext context) {
             System.out.println("Rabbit runs here ...");
@@ -91,7 +79,6 @@ public class AlertRabbit {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-
         }
     }
 
