@@ -18,7 +18,8 @@ public class SqlRuParse {
             Element parent = td.parent();
             String parseString = parent.child(5).text();
             System.out.println(parseString);
-            System.out.println("JavaDate: " + sqlRuDateTimeParser.parse(parseString));
+            System.out.println("Java_LocalDateTime: "
+                    + sqlRuDateTimeParser.parse(parseString));
         }
     }
 }
