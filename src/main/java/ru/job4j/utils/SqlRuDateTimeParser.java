@@ -13,7 +13,7 @@ public class SqlRuDateTimeParser implements DateTimeParser {
 
     private static final Map<String, String> MONTHS = Map.ofEntries(
             Map.entry("янв", "янв."),
-            Map.entry("февр", "фев."),
+            Map.entry("фев", "февр."),
             Map.entry("мар", "мар."),
             Map.entry("апр", "апр."),
             Map.entry("май", "мая"),
