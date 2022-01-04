@@ -6,9 +6,14 @@ import java.util.Map;
 
 public class SqlRuDateTimeParser implements DateTimeParser {
 
+    private static final DateTimeFormatter FORMATTER =
+            DateTimeFormatter.ofPattern("d MMM yy, HH:mm");
+    private static final DateTimeFormatter FORMATTER_DATE =
+            DateTimeFormatter.ofPattern("d MMM yy");
+
     private static final Map<String, String> MONTHS = Map.ofEntries(
             Map.entry("янв", "янв."),
-            Map.entry("февр", "февр."),
+            Map.entry("февр", "фев."),
             Map.entry("мар", "мар."),
             Map.entry("апр", "апр."),
             Map.entry("май", "мая"),
@@ -23,23 +28,20 @@ public class SqlRuDateTimeParser implements DateTimeParser {
     @Override
     public LocalDateTime parse(String parse) {
         return LocalDateTime.parse(getFormat(parse),
-                DateTimeFormatter.ofPattern("d MMM yy, HH:mm"));
+                FORMATTER);
 
     }
     private String getFormat(String parse) {
         String resultDate;
-        String myFormatDate = "d MMM yy";
         String[] dateTime = parse.split(",");
         String date = dateTime[0];
         String time = dateTime[1];
         if (date.equals("сегодня")) {
             resultDate = LocalDate.now().
-                    format(DateTimeFormatter.
-                            ofPattern(myFormatDate));
+                    format(FORMATTER_DATE);
         } else if (date.equals("вчера")) {
             resultDate = LocalDate.now().minusDays(1).
-                    format(DateTimeFormatter.
-                            ofPattern(myFormatDate));
+                    format(FORMATTER_DATE);
         } else {
             String[] strings = date.split(" ");
             resultDate = strings[0] + " "
