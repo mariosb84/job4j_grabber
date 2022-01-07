@@ -11,7 +11,21 @@ public class Post {
     private String title;
     private String link;
     private String description;
-    private final LocalDateTime created = LocalDateTime.now();
+    private final LocalDateTime created;
+
+    public Post(int id, String title, String link, String description, LocalDateTime created) {
+        this.id = id;
+        this.title = title;
+        this.link = link;
+        this.description = description;
+        this.created = created;
+    }
+    public Post(String title, String link, String description, LocalDateTime created) {
+        this.title = title;
+        this.link = link;
+        this.description = description;
+        this.created = created;
+    }
 
     public LocalDateTime getTime() {
         return created;
@@ -65,11 +79,11 @@ public class Post {
         return id == post.id
                 && Objects.equals(title, post.title)
                 && Objects.equals(link, post.link)
-                && Objects.equals(description, post.description);
+                && created == post.created;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, title, link, description);
+        return Objects.hash(id, title, link, created);
     }
 }
