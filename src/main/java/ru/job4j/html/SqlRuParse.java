@@ -6,6 +6,9 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import ru.job4j.utils.SqlRuDateTimeParser;
 
+import java.io.IOException;
+import java.util.Arrays;
+
 public class SqlRuParse {
     public static void main(String[] args) throws Exception {
         SqlRuDateTimeParser sqlRuDateTimeParser = new SqlRuDateTimeParser();
@@ -23,7 +26,21 @@ public class SqlRuParse {
                 System.out.println("Java_LocalDateTime: "
                         + sqlRuDateTimeParser.parse(parseString));
                 System.out.println("Page:" + page);
+                System.out.println();
             }
         }
+        System.out.println(
+                getDetails("https://www.sql.ru/forum/1341077/programmist-delphi-c-so-znaniem-angliyskogo-na-udalenku"));
+    }
+    public static String getDetails(String string) throws IOException {
+        Document doc = Jsoup.connect(string).get();
+        return  "Описание : " + System.lineSeparator()
+        + doc.select("#content-wrapper-forum > table:nth-child(4) > tbody > tr:nth-child(2) > td:nth-child(2)").text()
+        + System.lineSeparator()
+                + System.lineSeparator()
+                + "Дата : " + System.lineSeparator()
+                + doc.select("#content-wrapper-forum > table:nth-child(4) > tbody > tr:nth-child(3) > td")
+                .text().substring(0, 16);
+
     }
 }
