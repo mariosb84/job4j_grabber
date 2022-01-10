@@ -4,9 +4,11 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import ru.job4j.Post;
 import ru.job4j.utils.SqlRuDateTimeParser;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 
 public class SqlRuParse {
@@ -30,17 +32,14 @@ public class SqlRuParse {
             }
         }
         System.out.println(
-                getDetails("https://www.sql.ru/forum/1341077/programmist-delphi-c-so-znaniem-angliyskogo-na-udalenku"));
+                getDetails("https://www.sql.ru/forum/1325330/lidy-be-fe-senior-cistemnye-analitiki-qa-i-devops-moskva-do-200t"));
     }
-    public static String getDetails(String string) throws IOException {
+    public static Post getDetails(String string) throws IOException {
+        SqlRuDateTimeParser sqlRuDateTimeParser = new SqlRuDateTimeParser();
         Document doc = Jsoup.connect(string).get();
-        return  "Описание : " + System.lineSeparator()
-        + doc.select("#content-wrapper-forum > table:nth-child(4) > tbody > tr:nth-child(2) > td:nth-child(2)").text()
-        + System.lineSeparator()
-                + System.lineSeparator()
-                + "Дата : " + System.lineSeparator()
-                + doc.select("#content-wrapper-forum > table:nth-child(4) > tbody > tr:nth-child(3) > td")
-                .text().substring(0, 16);
-
+        String title = doc.select(".messageHeader").get(0).ownText();
+        String description = doc.select(".msgBody").get(1).text();
+        LocalDateTime created = sqlRuDateTimeParser.parse(doc.select(".msgFooter").get(0).text().substring(0, 16));
+        return new Post(title, string, description, created);
     }
 }
