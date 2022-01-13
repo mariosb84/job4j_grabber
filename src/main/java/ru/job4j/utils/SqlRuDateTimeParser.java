@@ -6,13 +6,18 @@ import java.util.Map;
 
 public class SqlRuDateTimeParser implements DateTimeParser {
 
-    private static final DateTimeFormatter FORMATTER =
+    /*private static final DateTimeFormatter FORMATTER =
             DateTimeFormatter.ofPattern("d MMM yy, HH:mm");
     private static final DateTimeFormatter FORMATTER_DATE =
-            DateTimeFormatter.ofPattern("d MMM yy");
+            DateTimeFormatter.ofPattern("d MMM yy");*/
+
+    private static final DateTimeFormatter FORMATTER =
+            DateTimeFormatter.ofPattern("d MM yy, HH:mm");
+    private static final DateTimeFormatter FORMATTER_DATE =
+            DateTimeFormatter.ofPattern("d MM yy");
 
     private static final Map<String, String> MONTHS = Map.ofEntries(
-            Map.entry("янв", "янв."),
+            /*Map.entry("янв", "янв."),
             Map.entry("фев", "февр."),
             Map.entry("мар", "мар."),
             Map.entry("апр", "апр."),
@@ -23,7 +28,20 @@ public class SqlRuDateTimeParser implements DateTimeParser {
             Map.entry("сен", "сент."),
             Map.entry("окт", "окт."),
             Map.entry("ноя", "нояб."),
-            Map.entry("дек", "дек."));
+            Map.entry("дек", "дек."));*/
+
+            Map.entry("янв", "01"),
+            Map.entry("фев", "02"),
+            Map.entry("мар", "03"),
+            Map.entry("апр", "04"),
+            Map.entry("май", "05"),
+            Map.entry("июн", "06"),
+            Map.entry("июл", "07"),
+            Map.entry("авг", "08"),
+            Map.entry("сен", "09"),
+            Map.entry("окт", "10"),
+            Map.entry("ноя", "11"),
+            Map.entry("дек", "12"));
 
     @Override
     public LocalDateTime parse(String parse) {
