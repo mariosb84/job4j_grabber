@@ -6,30 +6,12 @@ import java.util.Map;
 
 public class SqlRuDateTimeParser implements DateTimeParser {
 
-    /*private static final DateTimeFormatter FORMATTER =
-            DateTimeFormatter.ofPattern("d MMM yy, HH:mm");
-    private static final DateTimeFormatter FORMATTER_DATE =
-            DateTimeFormatter.ofPattern("d MMM yy");*/
-
     private static final DateTimeFormatter FORMATTER =
             DateTimeFormatter.ofPattern("d MM yy, HH:mm");
     private static final DateTimeFormatter FORMATTER_DATE =
             DateTimeFormatter.ofPattern("d MM yy");
 
     private static final Map<String, String> MONTHS = Map.ofEntries(
-            /*Map.entry("янв", "янв."),
-            Map.entry("фев", "февр."),
-            Map.entry("мар", "мар."),
-            Map.entry("апр", "апр."),
-            Map.entry("май", "мая"),
-            Map.entry("июн", "июн."),
-            Map.entry("июл", "июл."),
-            Map.entry("авг", "авг."),
-            Map.entry("сен", "сент."),
-            Map.entry("окт", "окт."),
-            Map.entry("ноя", "нояб."),
-            Map.entry("дек", "дек."));*/
-
             Map.entry("янв", "01"),
             Map.entry("фев", "02"),
             Map.entry("мар", "03"),
